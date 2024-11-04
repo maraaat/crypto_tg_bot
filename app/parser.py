@@ -21,4 +21,4 @@ def get_coin_by_id(curr_id):
     coins = get_page()
     for coin in coins:
         if int(coin['id']) == curr_id:
-            return coin['symbol']
+            return coin

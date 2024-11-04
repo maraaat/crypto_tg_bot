@@ -33,7 +33,5 @@ async def get_users_favourite(tg_id):
     async with async_session() as session:
         user = await session.scalar(select(User).where(tg_id == User.tg_id))
         currencies = await session.scalars(select(Currency).where(user.id == Currency.user))
-        # tmp = currencies.all()
-        # for t in tmp:
-        #     print(t.currency_id)
+
         return currencies.all()
