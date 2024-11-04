@@ -4,11 +4,10 @@ from aiogram.types import CallbackQuery, Message
 
 import app.keyboards as kb
 from app.parser import get_coin_data_by_name, get_coin_by_id
-from app.database.requests import set_user, add_favourite_coins, delete_favourite_coins, get_users_favourite
+from app.database.requests import set_user, add_favourite_coins, delete_favourite_coins, get_users_favourite, invert_notifications_status
+from app.apsched import start_scheduler, remove_scheduler
 
 router = Router()
-
-ticker_message_id = None
 
 
 @router.message(CommandStart())
@@ -21,11 +20,9 @@ async def cmd_start(message: Message):
 
 @router.message(F.text == 'Общий список')
 async def show_coin_list(message: Message):
-    global ticker_message_id
-
+    await message.delete()
     await message.answer('Если нажать на тикер, то получите текущий курс монеты',
                          reply_markup=await kb.get_all_coins_kb())
-    ticker_message_id = message.message_id
 
 
 @router.message(F.text == 'Избранное')
@@ -83,6 +80,34 @@ async def edit_favourite_list(callback: CallbackQuery):
     )
 
 
+@router.callback_query(F.data == "enable_notifications")
+async def make_enable_notifications(callback: CallbackQuery):
+    await callback.message.delete()
+
+    await invert_notifications_status(callback.from_user.id)
+    start_scheduler(callback.message.bot, callback.from_user.id)
+
+    await callback.answer("Уведомления включены!")
+
+    await callback.message.answer(
+        'Посмотреть курс нажатием на тикер.',
+        reply_markup=await kb.get_fav_coins_kb(callback.from_user.id)
+    )
+
+
+@router.callback_query(F.data == "disable_notifications")
+async def make_enable_notifications(callback: CallbackQuery):
+    await callback.message.delete()
+
+    await invert_notifications_status(callback.from_user.id)
+    remove_scheduler(callback.from_user.id)
+    await callback.answer("Уведомления выключены!")
+    await callback.message.answer(
+        'Посмотреть курс нажатием на тикер.',
+        reply_markup=await kb.get_fav_coins_kb(callback.from_user.id)
+    )
+
+
 @router.callback_query(F.data == "add_favourite_coins")
 async def edit_favourite_list(callback: CallbackQuery):
     await callback.message.delete()
@@ -97,9 +122,6 @@ async def show_coin_data(callback: CallbackQuery):
     res = get_coin_data_by_name(callback.data.split('_')[1])
     await callback.answer(text=f"{get_coin_by_id(int(res['id']))['symbol']} добавлен в избранное")
     await add_favourite_coins(callback.from_user.id, res['id'])
-
-
-
 
 
 @router.callback_query(F.data.startswith('edit-fav_'))

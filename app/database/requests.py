@@ -1,6 +1,9 @@
+from aiogram import Bot
+
 from app.database.models import async_session
 from app.database.models import User, Currency
 from sqlalchemy import select, delete, update
+
 
 
 async def set_user(tg_id):
@@ -8,7 +11,7 @@ async def set_user(tg_id):
         user = await session.scalar(select(User).where(tg_id == User.tg_id))
 
         if not user:
-            session.add(User(tg_id=tg_id))
+            session.add(User(tg_id=tg_id, notifications=0))
             await session.commit()
 
 
@@ -35,3 +38,21 @@ async def get_users_favourite(tg_id):
         currencies = await session.scalars(select(Currency).where(user.id == Currency.user))
 
         return currencies.all()
+
+
+async def invert_notifications_status(tg_id):
+    async with async_session() as session:
+        user = await session.scalar(select(User).where(tg_id == User.tg_id))
+        user.notifications = not user.notifications
+
+        await session.commit()
+
+
+async def get_notifications_status(tg_id):
+    async with async_session() as session:
+        user = await session.scalar(select(User).where(tg_id == User.tg_id))
+
+        return user.notifications
+
+
+

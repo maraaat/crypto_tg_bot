@@ -2,7 +2,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
 from app.parser import get_page, get_coin_by_id
-from app.database.requests import get_users_favourite
+from app.database.requests import get_users_favourite, get_notifications_status
 
 
 async def get_all_coins_kb():
@@ -41,10 +41,16 @@ async def get_fav_coins_kb(tg_id):
     keyboard.row(
         InlineKeyboardButton(text="Редактировать", callback_data="edit_favourite"),
         InlineKeyboardButton(text="Добавить", callback_data="add_favourite_coins"),
-        InlineKeyboardButton(text="Вывести все", callback_data="show_course_fav_coins")
+        InlineKeyboardButton(text="Вывести все", callback_data="show_course_fav_coins"),
     )
+    notification_status = await get_notifications_status(tg_id)
+    if notification_status:
+        keyboard.add(InlineKeyboardButton(text="Выкл. уведомления", callback_data="disable_notifications"))
+    else:
+        keyboard.add(InlineKeyboardButton(text="Вкл. уведомления", callback_data="enable_notifications"))
 
-    return keyboard.adjust(4).as_markup()
+
+    return keyboard.adjust(3).as_markup()
 
 
 async def edit_fav_coins_kb(tg_id):
