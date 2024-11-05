@@ -5,6 +5,7 @@ from app.parser import get_page, get_coin_by_id
 from app.database.requests import get_users_favourite, get_notifications_status
 
 
+# Клавиатура, с отображение всех монет с парсера
 async def get_all_coins_kb():
     currencies = get_page()
     keyboard = InlineKeyboardBuilder()
@@ -14,6 +15,7 @@ async def get_all_coins_kb():
     return keyboard.adjust(4).as_markup()
 
 
+# Клавиатура для добавление в избранное, т.е. есть выход из нее
 async def get_all_coins_kb_and_exit():
     currencies = get_page()
     keyboard = InlineKeyboardBuilder()
@@ -28,6 +30,7 @@ async def get_all_coins_kb_and_exit():
     return keyboard.adjust(4).as_markup()
 
 
+# Клавиатура с отображение избранных монет и функциями
 async def get_fav_coins_kb(tg_id):
     coins = await get_users_favourite(tg_id)
 
@@ -53,6 +56,7 @@ async def get_fav_coins_kb(tg_id):
     return keyboard.adjust(3).as_markup()
 
 
+# Клавиатура с отображением избранных и возможность их удалять
 async def edit_fav_coins_kb(tg_id):
     currencies = await get_users_favourite(tg_id)
 
@@ -65,6 +69,7 @@ async def edit_fav_coins_kb(tg_id):
     return keyboard.adjust(4).as_markup()
 
 
+# Клавиатура с основными кнопками, которые в меню
 async def main_menu_kb():
     kb = [
         [KeyboardButton(text="Избранное"), KeyboardButton(text="Общий список")]
